@@ -53,7 +53,9 @@ The application follows a layered architecture, with Spring Boot handling HTTP a
 Components
 
 Slack Event Handler: Processes Slack events (assistant_thread_started, message.im) using Slack Bolt, triggering responses.
+slBotService: Core service that directs user requests to either Grok API for answers or to SeaLights API for coverage data, based on the user's request.
 Grok Service: Encapsulates logic for calling the xAI Grok API via WebClient, parsing responses, and formatting replies.
+SeaLights Service: Handles interactions with the SeaLights API to fetch code coverage and TGA reports.
 Spring Boot Application: Manages dependency injection, configuration, and application lifecycle.
 Tests: Unit and integration tests in src/test/kotlin/com/example, using JUnit 5 and MockK.
 
@@ -65,13 +67,22 @@ Below is a PlantUML sequence diagram showing the flow when a user sends a messag
 actor User
 participant "Slack" as Slack
 participant "GrokBot\n(Spring Boot)" as Bot
+participant "slBotService" as SlBotService
 participant "Grok API\n(xAI)" as GrokAPI
+participant "SeaLights API" as SeaLightsAPI
 
-User -> Slack: Sends message\n"Get user details for John Doe"
+User -> Slack: Sends message
 Slack -> Bot: Event: message.im
-Bot -> GrokAPI: POST /v1/grok\n{"prompt": "Get user details..."}
-GrokAPI -> Bot: {"response": "User details..."}
-Bot -> Slack: Reply in thread\n"User details..."
+Bot -> SlBotService: Process user request
+alt User asks for information
+    SlBotService -> GrokAPI: POST /v1/grok\n{"prompt": "Get user details..."}
+    GrokAPI -> SlBotService: {"response": "User details..."}
+else User asks for coverage
+    SlBotService -> SeaLightsAPI: GET /sl-api/v2/coverage\n{"projectId": "project123"}
+    SeaLightsAPI -> SlBotService: {"coveragePercentage": 85.2, ...}
+end
+SlBotService -> Bot: Return response
+Bot -> Slack: Reply in thread
 Slack -> User: Displays reply
 
 ```

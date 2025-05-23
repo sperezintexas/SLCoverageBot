@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "1.9.25"
     java
     kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.serialization") version "1.9.25"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
 
@@ -33,6 +34,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$logVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
